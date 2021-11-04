@@ -151,9 +151,17 @@ class TestingBot:
                 break
         return best_value
 
-    def material_evaluate(self, board):
+    '''
+    @staticmethod
+    def tree_search(board, height, alpha, beta, alphaTurn):
+        if height==0 or board.is_game_over():
+            return .material_evaluate(board)
+    '''    
+
+    @staticmethod
+    def material_evaluate(board):
         if board.is_checkmate():
-            return -1000000 if board.turn == self.color else 1000000
+            board.outcome(chess.Termination()) #TODO: Reimplement 
 
         if board.is_stalemate() or board.is_insufficient_material() or board.is_seventyfive_moves():
             return 0
