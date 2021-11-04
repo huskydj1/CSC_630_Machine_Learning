@@ -68,54 +68,44 @@ class ChessDataset(torch.utils.data.Dataset):
         
 piece_onehotindex = {'P': 0, 'N': 1, 'B': 2, 'R': 3, 'Q': 4, 'K': 5, 'p': 6, 'n': 7, 'b': 8, 'r': 9, 'q': 10, 'k': 11, '.': -1}
 board_encoding = [0] * (64 * 12)
+'''one_hot_dict = {'P': [1,0,0,0,0,0,0,0,0,0,0,0], 
+        'N': [0,1,0,0,0,0,0,0,0,0,0,0], 
+        'B': [0,0,1,0,0,0,0,0,0,0,0,0], 
+        'R': [0,0,0,1,0,0,0,0,0,0,0,0], 
+        'Q': [0,0,0,0,1,0,0,0,0,0,0,0], 
+        'K': [0,0,0,0,0,1,0,0,0,0,0,0], 
+        'p': [0,0,0,0,0,0,1,0,0,0,0,0], 
+        'n': [0,0,0,0,0,0,0,1,0,0,0,0], 
+        'b': [0,0,0,0,0,0,0,0,1,0,0,0], 
+        'r': [0,0,0,0,0,0,0,0,0,1,0,0], 
+        'q': [0,0,0,0,0,0,0,0,0,0,1,0], 
+        'k': [0,0,0,0,0,0,0,0,0,0,0,1], 
+        '.': [0,0,0,0,0,0,0,0,0,0,0,0]}'''
 
 def convert_fen_to_encoding(fen_string): # TODO: SPEED THIS UP
-    encoding_times = [] 
-    encoding_times.append(("Begin", time.time()))
-
-    
-    one_hot_dict = {'P': [1,0,0,0,0,0,0,0,0,0,0,0], 
-                    'N': [0,1,0,0,0,0,0,0,0,0,0,0], 
-                    'B': [0,0,1,0,0,0,0,0,0,0,0,0], 
-                    'R': [0,0,0,1,0,0,0,0,0,0,0,0], 
-                    'Q': [0,0,0,0,1,0,0,0,0,0,0,0], 
-                    'K': [0,0,0,0,0,1,0,0,0,0,0,0], 
-                    'p': [0,0,0,0,0,0,1,0,0,0,0,0], 
-                    'n': [0,0,0,0,0,0,0,1,0,0,0,0], 
-                    'b': [0,0,0,0,0,0,0,0,1,0,0,0], 
-                    'r': [0,0,0,0,0,0,0,0,0,1,0,0], 
-                    'q': [0,0,0,0,0,0,0,0,0,0,1,0], 
-                    'k': [0,0,0,0,0,0,0,0,0,0,0,1], 
-                    '.': [0,0,0,0,0,0,0,0,0,0,0,0]}
     
 
     fen_string_props = fen_string.split(' ') # Refer to: https://tynedalechess.wordpress.com/2017/11/05/fen-strings-explained/
     assert len(fen_string_props)==6
-    encoding_times.append(("Split FEN_STRING", time.time()))
 
     # Store Board Positions
+    '''
     rows = chess.Board(fen_string).__str__().split('\n')
-    encoding_times.append(("chess.Board", time.time()))
-
     squares_encoding = []
     for row in rows:
-        print(row)
         squares_encoding += list(map(lambda x: one_hot_dict[x], row.split(' ')))
     
     # print(squares_encoding)
-    print(len(squares_encoding), type(squares_encoding), 
-        len(squares_encoding[0]), type(squares_encoding[0]),
-            type(squares_encoding[0][0]))
-    encoding_times.append(("Board Positions Will's", time.time()))
-
+    # print(len(squares_encoding), type(squares_encoding), len(squares_encoding[0]), type(squares_encoding[0]), type(squares_encoding[0][0]))
+    
+    '''
     rows = chess.Board(fen_string).__str__().replace(" ", "").split('\n')
     for i in range(len(rows)):
         for j in range(len(rows[0])):
             if piece_onehotindex[rows[i][j]]!=-1:
                 board_encoding[12*8*i + 12*j + piece_onehotindex[rows[i][j]]] = 1
-    encoding_times.append(("Board Positions Davin's Superior Code", time.time()))
-
-    # Store Turn
+    
+     # Store Turn
     if fen_string_props[1] == 'w':
         turn = [1, 0]
     elif fen_string_props[1] == 'b':
@@ -123,35 +113,30 @@ def convert_fen_to_encoding(fen_string): # TODO: SPEED THIS UP
     else:
         print("Nobody's turn?")
         assert 0==1
-    encoding_times.append(("Turn", time.time()))
 
     # Store Castle Privileges
     castle_privileges = fen_string_props[2]
     castle_privileges_encoding = [int(x in castle_privileges) for x in ['K', 'Q', 'k', 'q']]
-    encoding_times.append(("Castle Privileges", time.time()))
 
     # Store Flattened Encoding
+    '''
     flattened_squares_encoding = []
     for square in squares_encoding:
         flattened_squares_encoding += square
-    print(flattened_squares_encoding)
-    print("Two methods are equal?", board_encoding==flattened_squares_encoding)
-    print([(i, board_encoding[i], flattened_squares_encoding[i]) 
-            for i in range(768) if board_encoding[i]!=flattened_squares_encoding[i]])
+    # print("Two methods are equal?", board_encoding==flattened_squares_encoding)
+    # print([(i, board_encoding[i], flattened_squares_encoding[i]) for i in range(768) if board_encoding[i]!=flattened_squares_encoding[i]])
 
     full_encoding = flattened_squares_encoding + turn + castle_privileges_encoding
-    encoding_times.append(("Combine and Flatten Encoding", time.time()))
+    '''
 
-    
+    full_encoding = board_encoding + turn + castle_privileges_encoding
     for i in range(len(rows)):
         for j in range(len(rows[0])):
             if piece_onehotindex[rows[i][j]]!=-1:
                 board_encoding[12*8*i + 12*j + piece_onehotindex[rows[i][j]]] = 0
     
-    encoding_times.append(("End", time.time()))
-    encoding_durations = [(encoding_times[i][0], encoding_times[i][1] - encoding_times[i-1][1]) for i in range(1, len(encoding_times))]
-    print(encoding_durations)
     
+                
     return full_encoding
 
 def filter_mates(eval):
@@ -172,7 +157,9 @@ def convert_to_pawn_advantage(output):
     return 400 * math.log10(output/(1-output))
 
 def main():
-    dataset = ChessDataset('data/chessData_toy.csv', encoded=False)
+    begin_time = time.time()
+    dataset = ChessDataset('data/chessData_10000sub.csv', encoded=False)
+    print(f"Duration: {time.time() - begin_time}")
 
     '''
 
